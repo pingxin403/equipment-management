@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    schema: classpath:db/device-h2.sql
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  application:
+    name: equipment-management
+mybatis:
+  type-aliases-package: com.hyp.ujs.bean
+  configuration:
+    map-underscore-to-camel-case: true
+    default-enum-type-handler: com.hyp.ujs.em.commons.constant.CodeEnumTypeHandler
+
+
+server:
+  servlet:
+    context-path: /em

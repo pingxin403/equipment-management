@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    schema: classpath:db/device-h2.sql
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:device
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+  application:
+    name: equipment-management
+mybatis-plus:
+  type-aliases-package: com.hyp.ujs.bean
+  configuration:
+    map-underscore-to-camel-case: true
+    default-enum-type-handler: com.hyp.ujs.em.commons.constant.CodeEnumTypeHandler
+  mapper-locations: com.hyp.ujs.em.mapper.xml.*.xml
+
+  global-config:
+    db-config:
+      id-type: auto
+      #逻辑删除配置
+      logic-delete-field: flag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+
+
+
+server:
+  servlet:
+    context-path: /em
