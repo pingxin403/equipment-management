@@ -3,6 +3,7 @@ package com.hyp.ujs.em.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hyp.ujs.em.dto.DeviceAddressDto;
 import com.hyp.ujs.em.entity.DeviceAddress;
 import com.hyp.ujs.em.service.IDeviceAddressService;
 import com.hyp.ujs.em.vo.DeviceAddressVo;
@@ -29,18 +30,25 @@ public class DeviceAddressController {
 
 
     @PostMapping("/")
-    public DeviceAddress add(@RequestBody DeviceAddress vo) {
-        if (addressService.save(vo)) {
-            return vo;
+    public DeviceAddress add(@RequestBody DeviceAddressDto vo) {
+        DeviceAddress address = new DeviceAddress();
+        BeanUtils.copyProperties(vo, address);
+        if (addressService.save(address)) {
+            return address;
         } else {
             return null;
         }
     }
 
-    @PutMapping("/")
-    public DeviceAddress update(@RequestBody DeviceAddress vo) {
-        if (addressService.updateById(vo)) {
-            return vo;
+    @PutMapping("/{id}")
+    public DeviceAddress update(@PathVariable("id") Integer id, @RequestBody DeviceAddressDto vo) {
+        DeviceAddress address = addressService.getById(id);
+        if (address == null) {
+            return null;
+        }
+        BeanUtils.copyProperties(vo, address);
+        if (addressService.updateById(address)) {
+            return address;
         } else {
             return null;
         }

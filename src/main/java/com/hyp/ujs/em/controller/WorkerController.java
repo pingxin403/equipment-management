@@ -3,6 +3,7 @@ package com.hyp.ujs.em.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hyp.ujs.em.dto.WorkerDto;
 import com.hyp.ujs.em.entity.Worker;
 import com.hyp.ujs.em.service.IWorkerService;
 import com.hyp.ujs.em.vo.WorkerVo;
@@ -10,6 +11,8 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 /**
  * <p>
@@ -29,18 +32,25 @@ public class WorkerController {
 
 
     @PostMapping("/")
-    public Worker add(@RequestBody Worker vo) {
-        if (workerService.save(vo)) {
-            return vo;
+    public Worker add(@RequestBody WorkerDto vo) {
+        Worker worker = new Worker();
+        BeanUtils.copyProperties(vo, worker);
+        if (workerService.save(worker)) {
+            return worker;
         } else {
             return null;
         }
     }
 
-    @PutMapping("/")
-    public Worker update(@RequestBody Worker vo) {
-        if (workerService.updateById(vo)) {
-            return vo;
+    @PutMapping("/{id}")
+    public Worker update(@PathVariable("id") Integer id, @RequestBody WorkerDto vo) {
+        Worker worker = workerService.getById(id);
+        if (Objects.isNull(worker)) {
+            return null;
+        }
+        BeanUtils.copyProperties(vo, worker);
+        if (workerService.updateById(worker)) {
+            return worker;
         } else {
             return null;
         }

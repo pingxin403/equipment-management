@@ -3,6 +3,7 @@ package com.hyp.ujs.em.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hyp.ujs.em.dto.MaintenanceTaskDto;
 import com.hyp.ujs.em.entity.MaintenanceTask;
 import com.hyp.ujs.em.service.IMaintenanceTaskService;
 import com.hyp.ujs.em.vo.MaintenanceTaskVo;
@@ -10,6 +11,8 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 /**
  * <p>
@@ -28,18 +31,27 @@ public class MaintenanceTaskController {
 
 
     @PostMapping("/")
-    public MaintenanceTask add(@RequestBody MaintenanceTask vo) {
-        if (taskService.save(vo)) {
-            return vo;
+    public MaintenanceTask add(@RequestBody MaintenanceTaskDto vo) {
+        MaintenanceTask task = new MaintenanceTask();
+        BeanUtils.copyProperties(vo, task);
+
+        if (taskService.save(task)) {
+            return task;
         } else {
             return null;
         }
     }
 
-    @PutMapping("/")
-    public MaintenanceTask update(@RequestBody MaintenanceTask vo) {
-        if (taskService.updateById(vo)) {
-            return vo;
+    @PutMapping("/{id}")
+    public MaintenanceTask update(@PathVariable("id") Integer id, @RequestBody MaintenanceTaskDto vo) {
+        MaintenanceTask task = taskService.getById(id);
+        if (Objects.isNull(task)) {
+            return null;
+        }
+        BeanUtils.copyProperties(vo, task);
+
+        if (taskService.updateById(task)) {
+            return task;
         } else {
             return null;
         }

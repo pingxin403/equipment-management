@@ -15,4 +15,6 @@ public interface BaseCodeEnum {
 
     @JsonValue
     String getMsg();
+
+
 }

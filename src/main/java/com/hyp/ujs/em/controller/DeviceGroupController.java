@@ -3,6 +3,7 @@ package com.hyp.ujs.em.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hyp.ujs.em.dto.DeviceGroupDto;
 import com.hyp.ujs.em.entity.DeviceGroup;
 import com.hyp.ujs.em.service.IDeviceGroupService;
 import com.hyp.ujs.em.vo.DeviceGroupVo;
@@ -10,6 +11,8 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 /**
  * <p>
@@ -28,16 +31,23 @@ public class DeviceGroupController {
 
 
     @PostMapping("/")
-    public DeviceGroup add(@RequestBody DeviceGroup vo) {
-        if (groupService.save(vo)) {
-            return vo;
+    public DeviceGroup add(@RequestBody DeviceGroupDto vo) {
+        DeviceGroup deviceGroup = new DeviceGroup();
+        BeanUtils.copyProperties(vo, deviceGroup);
+        if (groupService.save(deviceGroup)) {
+            return deviceGroup;
         } else {
             return null;
         }
     }
 
-    @PutMapping("/")
-    public DeviceGroup update(@RequestBody DeviceGroup vo) {
+    @PutMapping("/{id}")
+    public DeviceGroup update(@PathVariable("id") Integer id, @RequestBody DeviceGroup vo) {
+        DeviceGroup deviceGroup = groupService.getById(id);
+        if (Objects.isNull(deviceGroup)) {
+            return null;
+        }
+        BeanUtils.copyProperties(vo, deviceGroup);
         if (groupService.updateById(vo)) {
             return vo;
         } else {

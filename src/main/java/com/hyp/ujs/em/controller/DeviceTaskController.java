@@ -4,6 +4,7 @@ package com.hyp.ujs.em.controller;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hyp.ujs.em.commons.constant.DeviceTaskStatus;
+import com.hyp.ujs.em.dto.DeviceTaskDto;
 import com.hyp.ujs.em.dto.DeviceTaskStatusDto;
 import com.hyp.ujs.em.dto.DeviceTaskTypeDto;
 import com.hyp.ujs.em.entity.DeviceTask;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * TODO 后续使用消息中间件替代
@@ -42,22 +44,29 @@ public class DeviceTaskController {
      * @return
      */
     @PostMapping("/")
-    public DeviceTask add(@RequestBody DeviceTask vo) {
-        if (taskService.save(vo)) {
-            String msg = taskService.makeMsg(vo);
+    public DeviceTask add(@RequestBody DeviceTaskDto vo) {
+        DeviceTask task = new DeviceTask();
+        BeanUtils.copyProperties(vo, task);
+        if (taskService.save(task)) {
+            String msg = taskService.makeMsg(task);
             workerService.sendMsg(vo.getServiceId(), msg);
-            return vo;
+            return task;
         } else {
             return null;
         }
     }
 
-    @PutMapping("/")
-    public DeviceTask update(@RequestBody DeviceTask vo) {
-        if (taskService.updateById(vo)) {
-            String msg = taskService.makeMsg(vo);
+    @PutMapping("/{id}")
+    public DeviceTask update(@PathVariable("id") Integer id, @RequestBody DeviceTaskDto vo) {
+        DeviceTask task = taskService.getById(id);
+        if (Objects.isNull(task)) {
+            return null;
+        }
+        BeanUtils.copyProperties(vo, task);
+        if (taskService.updateById(task)) {
+            String msg = taskService.makeMsg(task);
             workerService.sendMsg(vo.getServiceId(), msg);
-            return vo;
+            return task;
         } else {
             return null;
         }

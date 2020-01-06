@@ -19,8 +19,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeviceDto {
-
+public class DeviceExportDto {
+    /**
+     * 字段属性注解，value表头名，index顺序
+     */
     @ExcelProperty(value = "序号", index = 0)
     private Integer id;
 
@@ -32,7 +34,9 @@ public class DeviceDto {
 
     @ExcelProperty(value = "过期日期", index = 10)
     private String endDate;
-
+    /**
+     * 自定义枚举类型转换器
+     */
     @ExcelProperty(value = "状态", index = 3, converter = DeviceDetailStatusAutoConverter.class)
     private DeviceDetailStatus status;
 
@@ -50,4 +54,7 @@ public class DeviceDto {
     @ExcelProperty(value = "安装时间", index = 9)
     private String installDate;
 
+    @ExcelProperty(value = "创建时间", index = 11)
+    @DateTimeFormat("yyyy年MM月dd日HH时mm分ss秒")
+    private String createTime;
 }

@@ -53,5 +53,13 @@ public enum DeviceDetailStatus implements BaseCodeEnum {
         return name;
     }
 
+    public static DeviceDetailStatus from(String s) {
+        for (DeviceDetailStatus status : DeviceDetailStatus.values()) {
+            if (status.getMsg().equals(s)) {
+                return status;
+            }
+        }
+        return null;
+    }
 
 }

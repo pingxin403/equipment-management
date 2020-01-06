@@ -3,6 +3,7 @@ package com.hyp.ujs.em.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hyp.ujs.em.dto.ServiceTeamDto;
 import com.hyp.ujs.em.entity.ServiceTeam;
 import com.hyp.ujs.em.service.IServiceTeamService;
 import com.hyp.ujs.em.vo.ServiceTeamVo;
@@ -10,6 +11,8 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 /**
  * <p>
@@ -28,16 +31,24 @@ public class ServiceTeamController {
 
 
     @PostMapping("/")
-    public ServiceTeam add(@RequestBody ServiceTeam vo) {
-        if (teamService.save(vo)) {
-            return vo;
+    public ServiceTeam add(@RequestBody ServiceTeamDto vo) {
+        ServiceTeam serviceTeam = new ServiceTeam();
+        BeanUtils.copyProperties(vo, serviceTeam);
+
+        if (teamService.save(serviceTeam)) {
+            return serviceTeam;
         } else {
             return null;
         }
     }
 
-    @PutMapping("/")
-    public ServiceTeam update(@RequestBody ServiceTeam vo) {
+    @PutMapping("/{id}")
+    public ServiceTeam update(@PathVariable("id") Integer id, @RequestBody ServiceTeam vo) {
+        ServiceTeam serviceTeam = teamService.getById(id);
+        if (Objects.isNull(serviceTeam)) {
+            return null;
+        }
+        BeanUtils.copyProperties(vo, serviceTeam);
         if (teamService.updateById(vo)) {
             return vo;
         } else {

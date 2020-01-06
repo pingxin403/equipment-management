@@ -4,7 +4,7 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.hyp.ujs.em.dto.DeviceDto;
+import com.hyp.ujs.em.dto.DeviceExportDto;
 import com.hyp.ujs.em.entity.DeviceDetail;
 import com.hyp.ujs.em.service.IDeviceDetailService;
 import org.slf4j.Logger;
@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,15 +24,15 @@ import java.util.stream.Collectors;
  * Include in com.hyp.ujs.em.config.listener
  * hyp create at 20-1-4
  **/
-// 有个很重要的点 DemoDataListener 不能被spring管理，要每次读取excel都要new,然后里面用到spring可以构造方法传进去
-public class DeviceDataListener extends AnalysisEventListener<DeviceDto> {
+// 有个很重要的点 DeviceDataListener 不能被spring管理，要每次读取excel都要new,然后里面用到spring可以构造方法传进去
+public class DeviceDataListener extends AnalysisEventListener<DeviceExportDto> {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(DeviceDataListener.class);
     /**
      * 每隔5条存储数据库，实际使用中可以3000条，然后清理list ，方便内存回收
      */
     private static final int BATCH_COUNT = 5;
-    List<DeviceDto> list = new ArrayList<DeviceDto>();
+    List<DeviceExportDto> list = new ArrayList<DeviceExportDto>();
     /**
      * 假设这个是一个DAO，当然有业务逻辑这个也可以是一个service。当然如果不用存储这个对象没用。
      */
@@ -52,7 +54,7 @@ public class DeviceDataListener extends AnalysisEventListener<DeviceDto> {
      * @param context
      */
     @Override
-    public void invoke(DeviceDto data, AnalysisContext context) {
+    public void invoke(DeviceExportDto data, AnalysisContext context) {
         LOGGER.info("解析到一条数据:{}", JSON.toJSONString(data));
         list.add(data);
         // 达到BATCH_COUNT了，需要去存储一次数据库，防止数据几万条数据在内存，容易OOM
@@ -84,11 +86,15 @@ public class DeviceDataListener extends AnalysisEventListener<DeviceDto> {
                 (item) -> {
                     DeviceDetail detail = new DeviceDetail();
                     BeanUtils.copyProperties(item, detail);
+                    //String转为LocalDate
                     if (StringUtils.isNotBlank(item.getEndDate())) {
                         detail.setEndDate(LocalDate.parse(item.getEndDate()));
                     }
                     if (StringUtils.isNotBlank(item.getInstallDate())) {
                         detail.setInstallDate(LocalDate.parse(item.getInstallDate()));
+                    }
+                    if (StringUtils.isNotBlank(item.getCreateTime())) {
+                        detail.setCreateTime(LocalDateTime.parse(item.getCreateTime(), DateTimeFormatter.ofPattern("yyyy年MM月dd日HH时mm分ss秒")));
                     }
                     return detail;
                 }

@@ -8,8 +8,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hyp.ujs.em.commons.constant.CommonCode;
 import com.hyp.ujs.em.commons.data.ServiceException;
 import com.hyp.ujs.em.config.listener.DeviceDataListener;
+import com.hyp.ujs.em.dto.DeviceDetailDto;
 import com.hyp.ujs.em.dto.DeviceDetailStatusDto;
-import com.hyp.ujs.em.dto.DeviceDto;
+import com.hyp.ujs.em.dto.DeviceExportDto;
 import com.hyp.ujs.em.entity.DeviceDetail;
 import com.hyp.ujs.em.service.IDeviceDetailService;
 import com.hyp.ujs.em.utils.QRCodeUtil;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -57,7 +59,9 @@ public class DeviceDetailController {
 
 
     @PostMapping("/")
-    public DeviceDetail add(@RequestBody DeviceDetail deviceDetail) {
+    public DeviceDetail add(@RequestBody DeviceDetailDto vo) {
+        DeviceDetail deviceDetail = new DeviceDetail();
+        BeanUtils.copyProperties(vo, deviceDetail);
         if (detailService.save(deviceDetail)) {
             return deviceDetail;
         } else {
@@ -65,8 +69,13 @@ public class DeviceDetailController {
         }
     }
 
-    @PutMapping("/")
-    public DeviceDetail update(@RequestBody DeviceDetail deviceDetail) {
+    @PutMapping("/{id}")
+    public DeviceDetail update(@PathVariable("id") Integer id, @RequestBody DeviceDetail vo) {
+        DeviceDetail deviceDetail = detailService.getById(id);
+        if (Objects.isNull(deviceDetail)) {
+            return null;
+        }
+        BeanUtils.copyProperties(vo, deviceDetail);
         if (detailService.updateById(deviceDetail)) {
             return deviceDetail;
         } else {
@@ -95,6 +104,7 @@ public class DeviceDetailController {
 
     /**
      * 模板文件放在static文件夹下doc/Device_upload_sample_file.xlsx
+     *
      * @param request
      * @param response
      * @return
@@ -126,9 +136,9 @@ public class DeviceDetailController {
             DeviceDetail deviceDetail = new DeviceDetail();
             List<DeviceDetail> details = detailService.list(Wrappers.query(deviceDetail).between("create_time", fromDate, toDate));
 
-            List<DeviceDto> dtos = details.stream().map(
+            List<DeviceExportDto> dtos = details.stream().map(
                     (item) -> {
-                        DeviceDto dto = new DeviceDto();
+                        DeviceExportDto dto = new DeviceExportDto();
                         BeanUtils.copyProperties(item, dto);
                         if (Objects.nonNull(item.getEndDate())) {
                             dto.setEndDate(item.getEndDate().toString());
@@ -136,7 +146,9 @@ public class DeviceDetailController {
                         if (Objects.nonNull(item.getInstallDate())) {
                             dto.setInstallDate(item.getInstallDate().toString());
                         }
-
+                        if (Objects.nonNull(item.getCreateTime())) {
+                            dto.setCreateTime(item.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日HH时mm分ss秒")));
+                        }
 
                         return dto;
                     }
@@ -149,9 +161,10 @@ public class DeviceDetailController {
             response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
 
 
-            EasyExcel.write(response.getOutputStream(), DeviceDto.class).sheet(from.toString() + "to" + to.toString()).doWrite(dtos);
+            EasyExcel.write(response.getOutputStream(), DeviceExportDto.class).sheet(from.toString() + "to" + to.toString()).doWrite(dtos);
 
         } catch (Exception e) {
+            response.reset();
             throw new ServiceException("下载文件失败" + e.getMessage(), CommonCode.MISSING_REQUEST_PARAM_ERROR);
 
         }
@@ -170,7 +183,7 @@ public class DeviceDetailController {
     @ResponseBody
     @ApiOperation("导入")
     public String upload(MultipartFile file) throws IOException {
-        EasyExcel.read(file.getInputStream(), DeviceDto.class, new DeviceDataListener(detailService)).sheet().doRead();
+        EasyExcel.read(file.getInputStream(), DeviceExportDto.class, new DeviceDataListener(detailService)).sheet().doRead();
         return "success";
     }
 
